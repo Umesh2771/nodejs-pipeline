@@ -24,7 +24,7 @@ ${licenseTextTrimmed}
 
 
 if ! [ -d "${rootdir}/deps/icu/" ] && ! [ -d "${rootdir}/deps/icu-small/" ]; then
-  echo "ICU not installed, run configure to download it, e.g. ./configure --with-intl=small-icu --download=icu"
+  echo "ICU not installed, run \`./configure --with-intl=small-icu --download=icu\` to download it."
   exit 1
 fi
 
@@ -111,8 +111,6 @@ licenseText="$(sed -e '/^$/,$d' -e 's/^#$//' -e 's/^# //' "${rootdir}/tools/cppl
 addlicense "cpplint.py" "tools/cpplint.py" "$licenseText"
 licenseText="$(sed -e '/^$/,$d' -e 's/^#$//' -e 's/^# //' "${rootdir}/tools/gypi_to_gn.py" | tail -n +3)"
 addlicense "gypi_to_gn.py" "tools/gypi_to_gn.py" "$licenseText"
-licenseText="$(cat "${rootdir}/tools/eslint/node_modules/eslint/LICENSE")"
-addlicense "ESLint" "tools/eslint/node_modules/eslint" "$licenseText"
 licenseText="$(cat "${rootdir}/deps/googletest/LICENSE")"
 addlicense "gtest" "deps/googletest" "$licenseText"
 

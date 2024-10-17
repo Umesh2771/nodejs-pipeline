@@ -163,8 +163,8 @@ suite('StatementSync.prototype.run()', () => {
   });
 });
 
-suite('StatementSync.prototype.sourceSQL()', () => {
-  test('returns input SQL', (t) => {
+suite('StatementSync.prototype.sourceSQL', () => {
+  test('equals input SQL', (t) => {
     const db = new DatabaseSync(nextDb());
     t.after(() => { db.close(); });
     const setup = db.exec(
@@ -173,12 +173,12 @@ suite('StatementSync.prototype.sourceSQL()', () => {
     t.assert.strictEqual(setup, undefined);
     const sql = 'INSERT INTO types (key, val) VALUES ($k, $v)';
     const stmt = db.prepare(sql);
-    t.assert.strictEqual(stmt.sourceSQL(), sql);
+    t.assert.strictEqual(stmt.sourceSQL, sql);
   });
 });
 
-suite('StatementSync.prototype.expandedSQL()', () => {
-  test('returns expanded SQL', (t) => {
+suite('StatementSync.prototype.expandedSQL', () => {
+  test('equals expanded SQL', (t) => {
     const db = new DatabaseSync(nextDb());
     t.after(() => { db.close(); });
     const setup = db.exec(
@@ -192,7 +192,7 @@ suite('StatementSync.prototype.expandedSQL()', () => {
       stmt.run({ $k: '33' }, '42'),
       { changes: 1, lastInsertRowid: 33 },
     );
-    t.assert.strictEqual(stmt.expandedSQL(), expanded);
+    t.assert.strictEqual(stmt.expandedSQL, expanded);
   });
 });
 

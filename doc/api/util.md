@@ -364,6 +364,63 @@ util.formatWithOptions({ colors: true }, 'See object %O', { foo: 42 });
 // when printed to a terminal.
 ```
 
+## `util.getCallSite(frames)`
+
+> Stability: 1.1 - Active development
+
+<!-- YAML
+added: v22.9.0
+-->
+
+* `frames` {number} Number of frames returned in the stacktrace.
+  **Default:** `10`. Allowable range is between 1 and 200.
+* Returns: {Object\[]} An array of stacktrace objects
+  * `functionName` {string} Returns the name of the function associated with this stack frame.
+  * `scriptName` {string} Returns the name of the resource that contains the script for the
+    function for this StackFrame.
+  * `lineNumber` {number} Returns the number, 1-based, of the line for the associate function call.
+  * `column` {number} Returns the 1-based column offset on the line for the associated function call.
+
+Returns an array of stacktrace objects containing the stack of
+the caller function.
+
+```js
+const util = require('node:util');
+
+function exampleFunction() {
+  const callSites = util.getCallSite();
+
+  console.log('Call Sites:');
+  callSites.forEach((callSite, index) => {
+    console.log(`CallSite ${index + 1}:`);
+    console.log(`Function Name: ${callSite.functionName}`);
+    console.log(`Script Name: ${callSite.scriptName}`);
+    console.log(`Line Number: ${callSite.lineNumber}`);
+    console.log(`Column Number: ${callSite.column}`);
+  });
+  // CallSite 1:
+  // Function Name: exampleFunction
+  // Script Name: /home/example.js
+  // Line Number: 5
+  // Column Number: 26
+
+  // CallSite 2:
+  // Function Name: anotherFunction
+  // Script Name: /home/example.js
+  // Line Number: 22
+  // Column Number: 3
+
+  // ...
+}
+
+// A function to simulate another stack layer
+function anotherFunction() {
+  exampleFunction();
+}
+
+anotherFunction();
+```
+
 ## `util.getSystemErrorName(err)`
 
 <!-- YAML
@@ -1811,7 +1868,9 @@ added:
   - v21.7.0
   - v20.12.0
 changes:
-  - version: REPLACEME
+  - version:
+    - v22.8.0
+    - v20.18.0
     pr-url: https://github.com/nodejs/node/pull/54389
     description: Respect isTTY and environment variables
       such as NO_COLORS, NODE_DISABLE_COLORS, and FORCE_COLOR.
@@ -1825,8 +1884,8 @@ changes:
   * `stream` {Stream} A stream that will be validated if it can be colored. **Default:** `process.stdout`.
 
 This function returns a formatted text considering the `format` passed
-for printing in a terminal, it is aware of the terminal's capabilities
-and act according to the configuration set via `NO_COLORS`,
+for printing in a terminal. It is aware of the terminal's capabilities
+and acts according to the configuration set via `NO_COLORS`,
 `NODE_DISABLE_COLORS` and `FORCE_COLOR` environment variables.
 
 ```mjs

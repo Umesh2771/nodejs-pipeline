@@ -229,10 +229,10 @@ const { describe, it } = require('node:test');
 
 ## `only` tests
 
-If Node.js is started with the [`--test-only`][] command-line option, it is
-possible to skip all tests except for a selected subset by passing
-the `only` option to the tests that should run. When a test with the `only`
-option is set, all subtests are also run.
+If Node.js is started with the [`--test-only`][] command-line option, or test
+isolation is disabled, it is possible to skip all tests except for a selected
+subset by passing the `only` option to the tests that should run. When a test
+with the `only` option is set, all subtests are also run.
 If a suite has the `only` option set, all tests within the suite are run,
 unless it has descendants with the `only` option set, in which case only those
 tests are run.
@@ -422,12 +422,22 @@ node --test
 
 By default, Node.js will run all files matching these patterns:
 
-* `**/*.test.?(c|m)js`
-* `**/*-test.?(c|m)js`
-* `**/*_test.?(c|m)js`
-* `**/test-*.?(c|m)js`
-* `**/test.?(c|m)js`
-* `**/test/**/*.?(c|m)js`
+* `**/*.test.{cjs,mjs,js}`
+* `**/*-test.{cjs,mjs,js}`
+* `**/*_test.{cjs,mjs,js}`
+* `**/test-*.{cjs,mjs,js}`
+* `**/test.{cjs,mjs,js}`
+* `**/test/**/*.{cjs,mjs,js}`
+
+When [`--experimental-strip-types`][] is supplied, the following
+additional patterns are matched:
+
+* `**/*.test.{cts,mts,ts}`
+* `**/*-test.{cts,mts,ts}`
+* `**/*_test.{cts,mts,ts}`
+* `**/test-*.{cts,mts,ts}`
+* `**/test.{cts,mts,ts}`
+* `**/test/**/*.{cts,mts,ts}`
 
 Alternatively, one or more glob patterns can be provided as the
 final argument(s) to the Node.js command, as shown below.
@@ -475,7 +485,7 @@ all tests have completed. If the [`NODE_V8_COVERAGE`][] environment variable is
 used to specify a code coverage directory, the generated V8 coverage files are
 written to that directory. Node.js core modules and files within
 `node_modules/` directories are, by default, not included in the coverage report.
-However, they can be explicity included via the [`--test-coverage-include`][] flag. If
+However, they can be explicitly included via the [`--test-coverage-include`][] flag. If
 coverage is enabled, the coverage report is sent to any [test reporters][] via
 the `'test:coverage'` event.
 
@@ -1246,7 +1256,15 @@ added:
   - v18.9.0
   - v16.19.0
 changes:
-  - version: REPLACEME
+  - version: v23.0.0
+    pr-url: https://github.com/nodejs/node/pull/54705
+    description: Added the `cwd` option.
+  - version:
+    - v23.0.0
+    - v22.10.0
+    pr-url: https://github.com/nodejs/node/pull/53937
+    description: Added coverage options.
+  - version: v22.8.0
     pr-url: https://github.com/nodejs/node/pull/53927
     description: Added the `isolation` option.
   - version: v22.6.0
@@ -1273,8 +1291,11 @@ changes:
     parallel.
     If `false`, it would only run one test file at a time.
     **Default:** `false`.
+  * `cwd`: {string} Specifies the current working directory to be used by the test runner.
+    Serves as the base path for resolving files according to the [test runner execution model][].
+    **Default:** `process.cwd()`.
   * `files`: {Array} An array containing the list of files to run.
-    **Default** matching files from [test runner execution model][].
+    **Default:** matching files from [test runner execution model][].
   * `forceExit`: {boolean} Configures the test runner to exit the process once
     all known tests have finished executing even if the event loop would
     otherwise remain active. **Default:** `false`.
@@ -1296,6 +1317,12 @@ changes:
   * `setup` {Function} A function that accepts the `TestsStream` instance
     and can be used to setup listeners before any tests are run.
     **Default:** `undefined`.
+  * `execArgv` {Array} An array of CLI flags to pass to the `node` executable when
+    spawning the subprocesses. This option has no effect when `isolation` is `'none`'.
+    **Default:** `[]`
+  * `argv` {Array} An array of CLI flags to pass to each test file when spawning the
+    subprocesses. This option has no effect when `isolation` is `'none'`.
+    **Default:** `[]`.
   * `signal` {AbortSignal} Allows aborting an in-progress test execution.
   * `testNamePatterns` {string|RegExp|Array} A String, RegExp or a RegExp Array,
     that can be used to only run tests whose name matches the provided pattern.
@@ -1319,6 +1346,29 @@ changes:
       that specifies the index of the shard to run. This option is _required_.
     * `total` {number} is a positive integer that specifies the total number
       of shards to split the test files to. This option is _required_.
+  * `coverage` {boolean} enable [code coverage][] collection.
+    **Default:** `false`.
+  * `coverageExcludeGlobs` {string|Array} Excludes specific files from code coverage
+    using a glob pattern, which can match both absolute and relative file paths.
+    This property is only applicable when `coverage` was set to `true`.
+    If both `coverageExcludeGlobs` and `coverageIncludeGlobs` are provided,
+    files must meet **both** criteria to be included in the coverage report.
+    **Default:** `undefined`.
+  * `coverageIncludeGlobs` {string|Array} Includes specific files in code coverage
+    using a glob pattern, which can match both absolute and relative file paths.
+    This property is only applicable when `coverage` was set to `true`.
+    If both `coverageExcludeGlobs` and `coverageIncludeGlobs` are provided,
+    files must meet **both** criteria to be included in the coverage report.
+    **Default:** `undefined`.
+  * `lineCoverage` {number} Require a minimum percent of covered lines. If code
+    coverage does not reach the threshold specified, the process will exit with code `1`.
+    **Default:** `0`.
+  * `branchCoverage` {number} Require a minimum percent of covered branches. If code
+    coverage does not reach the threshold specified, the process will exit with code `1`.
+    **Default:** `0`.
+  * `functionCoverage` {number} Require a minimum percent of covered functions. If code
+    coverage does not reach the threshold specified, the process will exit with code `1`.
+    **Default:** `0`.
 * Returns: {TestsStream}
 
 **Note:** `shard` is used to horizontally parallelize test running across
@@ -1908,7 +1958,9 @@ mock can still be used after calling this function.
 ## Class: `MockModuleContext`
 
 <!-- YAML
-added: v22.3.0
+added:
+  - v22.3.0
+  - v20.18.0
 -->
 
 > Stability: 1.0 - Early development
@@ -1919,7 +1971,9 @@ created via the [`MockTracker`][] APIs.
 ### `ctx.restore()`
 
 <!-- YAML
-added: v22.3.0
+added:
+  - v22.3.0
+  - v20.18.0
 -->
 
 Resets the implementation of the mock module.
@@ -2060,7 +2114,9 @@ test('spies on an object method', (t) => {
 ### `mock.module(specifier[, options])`
 
 <!-- YAML
-added: v22.3.0
+added:
+  - v22.3.0
+  - v20.18.0
 -->
 
 > Stability: 1.0 - Early development
@@ -2086,8 +2142,10 @@ added: v22.3.0
 
 This function is used to mock the exports of ECMAScript modules, CommonJS
 modules, and Node.js builtin modules. Any references to the original module
-prior to mocking are not impacted. The following example demonstrates how a mock
-is created for a module.
+prior to mocking are not impacted. In order to enable module mocking, Node.js must
+be started with the [`--experimental-test-module-mocks`][] command-line flag.
+
+The following example demonstrates how a mock is created for a module.
 
 ```js
 test('mocks a builtin module in both module systems', async (t) => {
@@ -2814,6 +2872,11 @@ are defined, while others are emitted in the order that the tests execute.
         numbers and the number of times they were covered.
         * `line` {number} The line number.
         * `count` {number} The number of times the line was covered.
+    * `thresholds` {Object} An object containing whether or not the coverage for
+      each coverage type.
+      * `function` {number} The function coverage threshold.
+      * `branch` {number} The branch coverage threshold.
+      * `line` {number} The line coverage threshold.
     * `totals` {Object} An object containing a summary of coverage for all
       files.
       * `totalLineCount` {number} The total number of lines.
@@ -3011,6 +3074,31 @@ This event is only emitted if `--test` flag is passed.
 This event is not guaranteed to be emitted in the same order as the tests are
 defined.
 
+### Event: `'test:summary'`
+
+* `data` {Object}
+  * `counts` {Object} An object containing the counts of various test results.
+    * `cancelled` {number} The total number of cancelled tests.
+    * `failed` {number} The total number of failed tests.
+    * `passed` {number} The total number of passed tests.
+    * `skipped` {number} The total number of skipped tests.
+    * `suites` {number} The total number of suites run.
+    * `tests` {number} The total number of tests run, excluding suites.
+    * `todo` {number} The total number of TODO tests.
+    * `topLevel` {number} The total number of top level tests and suites.
+  * `duration_ms` {number} The duration of the test run in milliseconds.
+  * `file` {string|undefined} The path of the test file that generated the
+    summary. If the summary corresponds to multiple files, this value is
+    `undefined`.
+  * `success` {boolean} Indicates whether or not the test run is considered
+    successful or not. If any error condition occurs, such as a failing test or
+    unmet coverage threshold, this value will be set to `false`.
+
+Emitted when a test run completes. This event contains metrics pertaining to
+the completed test run, and is useful for determining if a test run passed or
+failed. If process-level test isolation is used, a `'test:summary'` event is
+generated for each test file in addition to a final cumulative summary.
+
 ### Event: `'test:watch:drained'`
 
 Emitted when no more tests are queued for execution in watch mode.
@@ -3157,6 +3245,7 @@ test('top level test', async (t) => {
 <!-- YAML
 added:
   - v22.2.0
+  - v20.15.0
 -->
 
 An object containing assertion methods bound to `context`. The top-level
@@ -3504,7 +3593,9 @@ added:
 Can be used to abort test subtasks when the test has been aborted.
 
 [TAP]: https://testanything.org/
+[`--experimental-strip-types`]: cli.md#--experimental-strip-types
 [`--experimental-test-coverage`]: cli.md#--experimental-test-coverage
+[`--experimental-test-module-mocks`]: cli.md#--experimental-test-module-mocks
 [`--experimental-test-snapshots`]: cli.md#--experimental-test-snapshots
 [`--import`]: cli.md#--importmodule
 [`--test-concurrency`]: cli.md#--test-concurrency
@@ -3532,6 +3623,7 @@ Can be used to abort test subtasks when the test has been aborted.
 [`run()`]: #runoptions
 [`suite()`]: #suitename-options-fn
 [`test()`]: #testname-options-fn
+[code coverage]: #collecting-code-coverage
 [describe options]: #describename-options-fn
 [it options]: #testname-options-fn
 [stream.compose]: stream.md#streamcomposestreams
