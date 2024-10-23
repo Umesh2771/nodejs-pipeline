@@ -48,7 +48,8 @@ paths.forEach(async (path) => {
   const fileContents = file.toString();
   const result = await linter.process(file);
   const isDifferent = fileContents !== result.toString();
-  let manPageContent, isManPageModified = false;
+  let manPageContent;
+  let isManPageModified = false;
   if (resolve(path) === cliPath) {
     child_process.execFileSync(process.execPath, [
       npxPath,
@@ -68,7 +69,7 @@ paths.forEach(async (path) => {
       fs.writeFileSync(path, result.toString());
     }
     if (isManPageModified) {
-      fs.writeFileSync(manFilePath, manPageContent)
+      fs.writeFileSync(manFilePath, manPageContent);
     }
   } else {
     if (isDifferent) handleDifference(path);
