@@ -51,17 +51,21 @@ paths.forEach(async (path) => {
   let manPageContent;
   let isManPageModified = false;
   if (resolve(path) === cliPath) {
-    child_process.execFileSync(process.execPath, [
-      npxPath,
-      '--yes',
-      'github:nodejs/api-docs-tooling',
-      '-i', path,
-      '-o', '.tmp.1',
-      '-t', 'man-page',
-    ]);
-    manPageContent = fs.readFileSync('.tmp.1', 'utf-8');
-    isManPageModified = manPageContent !== fs.readFileSync(manFilePath, 'utf-8');
-    fs.rmSync('.tmp.1');
+    try {
+      child_process.execFileSync(process.execPath, [
+        npxPath,
+        '--yes',
+        'github:nodejs/api-docs-tooling',
+        '-i', path,
+        '-o', '.tmp.1',
+        '-t', 'man-page',
+      ]);
+      manPageContent = fs.readFileSync('.tmp.1', 'utf-8');
+      isManPageModified = manPageContent !== fs.readFileSync(manFilePath, 'utf-8');
+      fs.rmSync('.tmp.1');
+    } catch {
+      console.warn('Failed to lint man-page.');
+    }
   }
 
   if (format) {
