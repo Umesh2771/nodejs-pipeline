@@ -6811,28 +6811,6 @@ added:
 
 The path to the parent directory of the file this {fs.Dirent} object refers to.
 
-#### `dirent.path`
-
-<!-- YAML
-added:
-  - v20.1.0
-  - v18.17.0
-deprecated:
-  - v21.5.0
-  - v20.12.0
-  - v18.20.0
-changes:
-  - version: v23.0.0
-    pr-url: https://github.com/nodejs/node/pull/51050
-    description: Accessing this property emits a warning. It is now read-only.
--->
-
-> Stability: 0 - Deprecated: Use [`dirent.parentPath`][] instead.
-
-* {string}
-
-Alias for `dirent.parentPath`. Read-only.
-
 ### Class: `fs.FSWatcher`
 
 <!-- YAML
