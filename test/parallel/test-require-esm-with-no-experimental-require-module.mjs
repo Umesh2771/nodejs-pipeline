@@ -4,7 +4,7 @@ import * as fixtures from '../common/fixtures.mjs';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert';
 
-test('correctly reports errors when trying to import an ESM module', () => {
+test('correctly reports errors when an ESM module is required with --no-experimental-require-module', () => {
   // The following regex matches the error message that is expected to be thrown
   //
   // package-type-module/require-esm-error-annotation/index.cjs:1
