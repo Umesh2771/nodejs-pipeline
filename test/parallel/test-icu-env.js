@@ -2,6 +2,8 @@
 const common = require('../common');
 const assert = require('assert');
 const { execFileSync } = require('child_process');
+const { readFileSync, globSync } = require('fs');
+const { path } = require('../common/fixtures');
 
 
 // This test checks for regressions in environment variable handling and
@@ -14,12 +16,21 @@ const { execFileSync } = require('child_process');
 // Typically, only a few strings change with each ICU update. If this script
 // suddenly generates identical values for all locales, it indicates a bug.
 // Editing json file manually is also fine.
-const localizationData = require('../fixtures/icu/localizationData.json');
+const localizationDataFile = path(`icu/localizationData-v${process.versions.icu}.json`);
 
-// system-icu should not be tested
-const hasBuiltinICU = process.config.variables.icu_gyp_path === 'tools/icu/icu-generic.gyp';
-if (!hasBuiltinICU)
-  common.skip('system ICU');
+let localizationData;
+try {
+  localizationData = JSON.parse(readFileSync(localizationDataFile));
+} catch ({ code }) {
+  assert.strictEqual(code, 'ENOENT');
+
+  // No data for current version, try latest known version
+  const [ latestVersion ] = globSync('test/fixtures/icu/localizationData-*.json')
+    .map((file) => file.match(/localizationData-v(.*)\.json/)[1])
+    .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+  localizationData = JSON.parse(readFileSync(path(`icu/localizationData-v${latestVersion}.json`)));
+}
+
 
 // small-icu doesn't support non-English locales
 const hasFullICU = (() => {

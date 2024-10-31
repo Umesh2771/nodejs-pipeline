@@ -21,7 +21,7 @@ const locales = [
   'ja', 'pcm', 'mr', 'te',
 ];
 
-const outputFilePath = new URL('../../test/fixtures/icu/localizationData.json', import.meta.url);
+const outputFilePath = new URL(`../../test/fixtures/icu/localizationData-v${process.versions.icu}.json`, import.meta.url);
 
 const runEnvCommand = (envVars, code) =>
   execFileSync(
