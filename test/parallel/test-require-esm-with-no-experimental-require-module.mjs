@@ -21,3 +21,21 @@ test('correctly reports errors when an ESM module is required with --no-experime
   assert(result.stderr.toString().match(matchRegex));
   assert.strictEqual(result.stdout.toString(), '');
 });
+
+test('correctly reports error for a longer stack trace', () => {
+  // The following regex matches the error message that is expected to be thrown
+  //
+  // package-type-module/require-esm-error-annotation/longer-stack.cjs:6
+  //   require('./app.js')
+  //   ^
+
+  const matchRegex = /package-type-module\/require-esm-error-annotation\/longer-stack\.cjs:6[\r?\n]\s{2}require\('\.\/app\.js'\)[\r?\n]\s{2}\^/;
+  const fixture = fixtures.path('es-modules/package-type-module/require-esm-error-annotation/longer-stack.cjs');
+  const args = ['--no-experimental-require-module', fixture];
+
+  const result = spawnSync(process.execPath, args);
+
+  assert.strictEqual(result.status, 1);
+  assert(result.stderr.toString().match(matchRegex));
+  assert.strictEqual(result.stdout.toString(), '');
+});
