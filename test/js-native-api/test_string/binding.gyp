@@ -6,9 +6,6 @@
         "test_string.c",
         "test_null.c",
       ],
-      "defines": [
-        "NAPI_EXPERIMENTAL",
-      ],
     },
   ],
 }
