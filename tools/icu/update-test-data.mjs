@@ -78,4 +78,4 @@ const localizationData = locales.reduce((acc, locale) => {
   relativeTime: {},
 });
 
-writeFileSync(outputFilePath, JSON.stringify(localizationData, null, 2));
+writeFileSync(outputFilePath, JSON.stringify(localizationData, null, 2) + '\n');
