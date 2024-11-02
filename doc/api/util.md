@@ -364,7 +364,7 @@ util.formatWithOptions({ colors: true }, 'See object %O', { foo: 42 });
 // when printed to a terminal.
 ```
 
-## `util.getCallSites(frameCount)`
+## `util.getCallSites(frameCount, options)`
 
 > Stability: 1.1 - Active development
 
@@ -374,6 +374,9 @@ added: v22.9.0
 
 * `frameCount` {number} Number of frames to capture as call site objects.
   **Default:** `10`. Allowable range is between 1 and 200.
+* `options` {Object}
+  * `sourceMap` {boolean} Reconstruct the original location in the stacktrace from the source-map.
+    Enabled by default with the flag `--enable-source-maps`.
 * Returns: {Object\[]} An array of call site objects
   * `functionName` {string} Returns the name of the function associated with this call site.
   * `scriptName` {string} Returns the name of the resource that contains the script for the
