@@ -16,8 +16,8 @@ on:
       release-date:
         required: true
         type: string
-        default: 'YYYY-MM-DD'
-        description: 'The release date in YYYY-MM-DD format'
+        default: YYYY-MM-DD
+        description: The release date in YYYY-MM-DD format
 
 concurrency: ${{ github.workflow }}
 
